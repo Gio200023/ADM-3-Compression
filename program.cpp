@@ -16,9 +16,11 @@ std::vector<std::string> readData(std::ifstream &file) {
 
 void dic_compression(const std::string &encode_or_decode, const std::string &data_type, std::ifstream &file, const std::string &input_filename) {
     std::vector<std::string> data = readData(file);
-    std::string output_filename = input_filename + ".dic";
 
     if (encode_or_decode == "en") {
+        std::string output_filename = input_filename + ".dic";
+        std::string dictionary_filename = output_filename + "file";
+        
         std::unordered_map<std::string, int> dictionary;
         std::vector<int> encodedData;
         int index = 0;
@@ -31,43 +33,62 @@ void dic_compression(const std::string &encode_or_decode, const std::string &dat
         }
 
         std::ofstream output_file(output_filename);
-        if (output_file.is_open()) {
+        std::ofstream dictionary_file(dictionary_filename);
+        if (output_file.is_open() && dictionary_file.is_open()) {
             for (const auto &code : encodedData) {
                 output_file << code << " ";
             }
-
-            // std::cout << "\n\nDictionary:\n";
-            
-            // for (const auto &entry : dictionary) {
-            //     std::cout << entry.first << " -> " << entry.second << "\n";
-            // }
-            
             output_file.close();
-            std::cout << "Data has been encoded and saved to " << output_filename << std::endl;
-        } else {
-            std::cerr << "Error: Could not write to file " << output_filename << std::endl;
-        }
 
-        std::cout << "\nDictionary:\n";
-        for (const auto &entry : dictionary) {
-            std::cout << entry.first << " -> " << entry.second << std::endl;
+            for (const auto &entry : dictionary) {
+                dictionary_file << entry.second << " -> " << entry.first << "\n";
+            }
+            dictionary_file.close();
+
+            std::cout << "Data has been encoded and saved to " << output_filename << std::endl;
+            std::cout << "Dictionary has been saved to " << dictionary_filename << std::endl;
+        } else {
+            std::cerr << "Error: Could not write to file " << output_filename << " or " << dictionary_filename << std::endl;
         }
 
     } else if (encode_or_decode == "de") {
+        std::string output_filename = input_filename + ".dic";
+        std::string dictionary_filename = input_filename + "file";
 
         std::unordered_map<int, std::string> reverseDictionary;
         std::vector<int> encodedData;
+
+        std::ifstream encoded_file(input_filename);
+        int code;
+        while (encoded_file >> code) {
+            encodedData.push_back(code);
+        }
+        std::cerr << dictionary_filename << std::endl;
+        std::ifstream dict_file(dictionary_filename);
+        if (!dict_file.is_open()) {
+            std::cerr << "Error: Dictionary file not found." << std::endl;
+            return;
+        }
+
+        std::string line;
+        while (std::getline(dict_file, line)) {
+            size_t pos = line.find(" -> ");
+            if (pos != std::string::npos) {
+                int key = std::stoi(line.substr(0, pos));  
+                std::string value = line.substr(pos + 4); 
+                reverseDictionary[key] = value;
+            }
+        }
+        dict_file.close();
 
         std::vector<std::string> decodedData;
         for (const auto &code : encodedData) {
             decodedData.push_back(reverseDictionary[code]);
         }
 
-        std::cout << "Decoded Data: ";
         for (const auto &value : decodedData) {
-            std::cout << value << " ";
+            std::cout << value << "\n";
         }
-        std::cout << std::endl;
     } else {
         std::cerr << "Invalid encode/decode option." << std::endl;
     }
