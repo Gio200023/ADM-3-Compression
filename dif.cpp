@@ -4,7 +4,7 @@
 #include "unordered_map"
 
 void dif_encode(std::ifstream &file, const std::string &input_filename) {
-    std::string output_filename = input_filename + ".rle";
+    std::string output_filename = input_filename + ".dif";
     std::ofstream output_file(output_filename);
 
     std::string text;
