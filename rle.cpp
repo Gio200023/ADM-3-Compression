@@ -2,31 +2,17 @@
 #include "string"
 #include "fstream"
 #include "unordered_map"
-#include "vector"
-
-#ifndef READ_DATA
-#define READ_DATA
-
-std::vector <std::string> readData(std::ifstream &file) {
-    std::vector <std::string> data;
-    std::string line;
-    while (std::getline(file, line)) {
-        data.push_back(line);
-    }
-    return data;
-}
-
-#endif
 
 void rle_encode(std::ifstream &file, const std::string &input_filename) {
-    std::vector <std::string> data = readData(file);
     std::string output_filename = input_filename + ".rle";
     std::ofstream output_file(output_filename);
 
     std::string previousValue;
 
     int count = 0;
-    for (const auto &value: data) {
+
+    std::string value;
+    while (std::getline(file, value)) {
         if (value == previousValue || previousValue == "") {
             count++;
         } else {
@@ -50,11 +36,11 @@ void rle_encode(std::ifstream &file, const std::string &input_filename) {
 }
 
 void rle_decode(std::ifstream &file, const std::string &input_filename) {
-    std::vector <std::string> data = readData(file);
     std::string output_filename = input_filename + ".csv";
     std::ofstream output_file(output_filename);
 
-    for (auto value: data) {
+    std::string value;
+    while (std::getline(file, value)) {
         std::string out = value.substr(0, value.find(" "));
         int64_t count = 1;
         if (value != out) {
