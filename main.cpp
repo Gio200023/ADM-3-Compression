@@ -4,6 +4,7 @@
 #include "filesystem"
 #include "dic.cpp"
 #include "bin.cpp"
+#include "rle.cpp"
 
 #define SUCCESS 0
 
@@ -18,6 +19,8 @@ void processData(std::string encode_or_decode, const std::string compression_tec
         dic_compression(encode_or_decode, data_type, filename, input_filename);
     } else if (compression_technique == "bin") {
         bin_compression(encode_or_decode, data_type, filename, input_filename);
+    } else if (compression_technique == "rle") {
+        rle_compression(encode_or_decode, data_type, filename, input_filename);
     }
     // add your function based on datatype and compression tech.
 }

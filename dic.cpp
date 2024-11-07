@@ -4,6 +4,9 @@
 #include "unordered_map"
 #include "vector"
 
+#ifndef READ_DATA
+#define READ_DATA
+
 std::vector <std::string> readData(std::ifstream &file) {
     std::vector <std::string> data;
     std::string line;
@@ -12,6 +15,8 @@ std::vector <std::string> readData(std::ifstream &file) {
     }
     return data;
 }
+
+#endif
 
 void dic_compression(const std::string &encode_or_decode, const std::string &data_type, std::ifstream &file,
                      const std::string &input_filename) {
