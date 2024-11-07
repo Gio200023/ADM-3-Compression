@@ -1,16 +1,21 @@
 CXX = c++
 CXXFLAGS = -std=c++17
 OBJECTS = \
-	main.o
+	program.o
 
-all: main
+CPP_FILES = \
+	program.cpp \
+	bin.cpp \
+	dic.cpp \
+	rle.cpp
 
-main: $(OBJECTS)
+all: program
+
+program: program.o
 	$(CXX) $(CXXFLAGS) -o $@ $(OBJECTS)
 
-%.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c $<
+program.o: $(CPP_FILES)
+	$(CXX) $(CXXFLAGS) -c program.cpp
 
 clean:
-	rm -f main
-	rm -f $(OBJECTS)
+	rm -f program program.o
