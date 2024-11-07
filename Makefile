@@ -8,7 +8,8 @@ CPP_FILES = \
 	bin.cpp \
 	dic.cpp \
 	rle.cpp \
-	dif.cpp
+	dif.cpp \
+	for.cpp
 
 all: program
 
