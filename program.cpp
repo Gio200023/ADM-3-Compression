@@ -11,9 +11,9 @@
 void processData(std::string encode_or_decode, const std::string compression_technique, const std::string data_type,
                  std::ifstream &filename, const std::string &input_filename) {
 
-    std::cout << "Processing file with compression technique '"
-              << compression_technique << "' and data type '" << data_type << ", :"
-              << ((encode_or_decode == "de") ? " decoding" : " encoding") << "'." << std::endl;
+    // std::cout << "Processing file with compression technique '"
+    //           << compression_technique << "' and data type '" << data_type << ", :"
+    //           << ((encode_or_decode == "de") ? " decoding" : " encoding") << "'." << std::endl;
 
     if (compression_technique == "dic") {
         dic_compression(encode_or_decode, data_type, filename, input_filename);

@@ -3,12 +3,13 @@
 #include "fstream"
 #include "unordered_map"
 #include "vector"
+#include "cstdint"
 
 #ifndef READ_DATA
 #define READ_DATA
 
-std::vector <std::string> readData(std::ifstream &file) {
-    std::vector <std::string> data;
+std::vector<std::string> readData(std::ifstream &file) {
+    std::vector<std::string> data;
     std::string line;
     while (std::getline(file, line)) {
         data.push_back(line);
@@ -20,28 +21,29 @@ std::vector <std::string> readData(std::ifstream &file) {
 
 void dic_compression(const std::string &encode_or_decode, const std::string &data_type, std::ifstream &file,
                      const std::string &input_filename) {
-    std::vector <std::string> data = readData(file);
+    std::vector<std::string> data = readData(file);
 
     if (encode_or_decode == "en") {
         std::string output_filename = input_filename + ".dic";
         std::string dictionary_filename = output_filename + "file";
 
         std::unordered_map<std::string, int> dictionary;
-        std::vector<int> encodedData;
+        std::vector<int8_t> encodedData; 
         int index = 0;
 
         for (const auto &value: data) {
             if (dictionary.find(value) == dictionary.end()) {
                 dictionary[value] = index++;
             }
-            encodedData.push_back(dictionary[value]);
+            encodedData.push_back(static_cast<int8_t>(dictionary[value])); 
         }
 
-        std::ofstream output_file(output_filename);
+
+        std::ofstream output_file(output_filename, std::ios::binary);
         std::ofstream dictionary_file(dictionary_filename);
         if (output_file.is_open() && dictionary_file.is_open()) {
             for (const auto &code: encodedData) {
-                output_file << code << " ";
+                output_file.write(reinterpret_cast<const char*>(&code), sizeof(code));
             }
             output_file.close();
 
@@ -62,14 +64,20 @@ void dic_compression(const std::string &encode_or_decode, const std::string &dat
         std::string dictionary_filename = input_filename + "file";
 
         std::unordered_map<int, std::string> reverseDictionary;
-        std::vector<int> encodedData;
+        std::vector<int8_t> encodedData;
 
-        std::ifstream encoded_file(input_filename);
-        int code;
-        while (encoded_file >> code) {
-            encodedData.push_back(code);
+        std::ifstream encoded_file(input_filename, std::ios::binary);
+        if (!encoded_file.is_open()) {
+            std::cerr << "Error: Encoded file not found." << std::endl;
+            return;
         }
-        std::cerr << dictionary_filename << std::endl;
+
+        int8_t code8;
+        while (encoded_file.read(reinterpret_cast<char*>(&code8), sizeof(code8))) {
+            encodedData.push_back(code8);
+        }
+        encoded_file.close();
+
         std::ifstream dict_file(dictionary_filename);
         if (!dict_file.is_open()) {
             std::cerr << "Error: Dictionary file not found." << std::endl;
@@ -87,7 +95,7 @@ void dic_compression(const std::string &encode_or_decode, const std::string &dat
         }
         dict_file.close();
 
-        std::vector <std::string> decodedData;
+        std::vector<std::string> decodedData;
         for (const auto &code: encodedData) {
             decodedData.push_back(reverseDictionary[code]);
         }
