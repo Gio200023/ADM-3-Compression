@@ -1,5 +1,5 @@
 CXX = c++
-CXXFLAGS = -std=c++17
+CXXFLAGS = -std=c++17 -g
 OBJECTS = \
 	program.o
 

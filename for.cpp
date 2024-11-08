@@ -8,17 +8,17 @@
 #include <limits>
 #include <algorithm>
 
-// TODO: Change int to template
-std::pair<int, std::vector<int> > readForData(std::ifstream &file) {
-    int minimumValue = std::numeric_limits<int>::max();
-    std::vector<int> data;
+template <typename T>
+std::pair<int64_t, std::vector<T> > readForData(std::ifstream &file) {
+    int64_t minimumValue = std::numeric_limits<int64_t>::max();
+    std::vector<T> data;
     std::string line;
     while (std::getline(file, line)) {
-        int num = std::stoi(line);
+        int64_t num = std::stoll(line);
         if(num < minimumValue) {
             minimumValue = num;
         }
-        data.push_back(num);
+        data.push_back(static_cast<T>(num));
     }
     return std::make_pair(minimumValue, data);
 }
@@ -37,23 +37,19 @@ size_t obtainOffset(const int &max_offset) {
     return offsetSize;
 }
 
-template <typename T>
-void writeToDisk(const std::vector<int> &results, std::ofstream &file) {
-    int count = 0;
+template <typename offsetType, typename resultType>
+void writeToDisk(const std::vector<resultType> &results, std::ofstream &file) {
     for (const auto &value: results) {
-        T offset = static_cast<T>(value);
-        file.write(reinterpret_cast<const char*>(&offset), sizeof(T));
-        count++;
+        auto offset = static_cast<offsetType>(value);
+        file.write(reinterpret_cast<const char*>(&offset), sizeof(offset));
     }
-    std::cout << "Count is " << count << std::endl;
 }
 
-// TODO: Change int to template
-//
-void for_encode(int minimumValue, std::vector<int> data, std::string filename) {
-    std::vector<int> results;
+template <typename T>
+void for_encode(int64_t minimumValue, const std::vector<T> &data, const std::string &filename) {
+    std::vector<T> results;
     for (const auto &value: data) {
-        results.push_back(value - minimumValue);
+        results.push_back(static_cast<T>(value - minimumValue));
     }
 
     int max_offset = *std::max_element(results.begin(), results.end());
@@ -69,60 +65,62 @@ void for_encode(int minimumValue, std::vector<int> data, std::string filename) {
     file.write(reinterpret_cast<const char*>(&offset_size), sizeof(offset_size));
 
     if (offset_size == sizeof(int8_t)) {
-        writeToDisk<int8_t>(results, file);
+        writeToDisk<int8_t, T>(results, file);
     } else if (offset_size == sizeof(int16_t)) {
-        writeToDisk<int16_t>(results, file);
+        writeToDisk<int16_t, T>(results, file);
     } else if (offset_size == sizeof(int32_t)) {
-        writeToDisk<int32_t>(results, file);
+        writeToDisk<int32_t, T>(results, file);
     } else {
-        writeToDisk<int64_t>(results, file);
+        writeToDisk<int64_t, T>(results, file);
     }
 
     file.close();
 }
 
-template <typename T>
-void readData(std::vector<int> &decodedValues, std::ifstream &file, const int &minimumValue) {
+template <typename T, typename resultType>
+void readData(std::vector<resultType> &decodedValues, std::ifstream &file, const int64_t &minimumValue) {
     while (file) {
         T value = 0;
         file.read(reinterpret_cast<char*>(&value), sizeof(T));
-        decodedValues.push_back(minimumValue + value);
+        decodedValues.push_back(static_cast<resultType>(minimumValue + value));
     }
     decodedValues.pop_back();
 }
 
-void for_decode(std::ifstream &file, std::string filename) {
-    int minimumValue = 0;
+template <typename T>
+void for_decode(std::ifstream &file, const std::string &filename) {
+    int64_t minimumValue = 0;
     size_t offset_size = 0;
     file.read(reinterpret_cast<char*>(&minimumValue), sizeof(minimumValue));
     file.read(reinterpret_cast<char*>(&offset_size), sizeof(offset_size));
 
-    std::vector<int> decodedValues;
+    std::vector<T> decodedValues;
     if (offset_size == sizeof(int8_t)) {
-        readData<int8_t>(decodedValues, file, minimumValue);
+        readData<int8_t, T>(decodedValues, file, minimumValue);
     } else if (offset_size == sizeof(int16_t)) {
-        readData<int16_t>(decodedValues, file, minimumValue);
+        readData<int16_t, T>(decodedValues, file, minimumValue);
     } else if (offset_size == sizeof(int32_t)) {
-        readData<int32_t>(decodedValues, file, minimumValue);
+        readData<int32_t, T>(decodedValues, file, minimumValue);
     } else {
-        readData<int64_t>(decodedValues, file, minimumValue);
+        readData<int64_t, T>(decodedValues, file, minimumValue);
     }
 
     std::ofstream output(filename);
     for (const auto &value: decodedValues) {
-        output << value << std::endl;
+        output << std::to_string(value) << std::endl;
     }
     output.close();
 
 }
 
+template <typename T>
 void for_compression(const std::string &encode_or_decode, const std::string &data_type, std::ifstream &file,
                      const std::string &input_filename) {
     if (encode_or_decode == "en") {
-        auto pair = readForData(file);
-        for_encode(pair.first, pair.second, input_filename + ".for");
+        auto pair = readForData<T>(file);
+        for_encode<T>(pair.first, pair.second, input_filename + ".for");
     } else {
-        for_decode(file, input_filename + ".decoded");
+        for_decode<T>(file, input_filename + ".decoded");
     }
 }
 
