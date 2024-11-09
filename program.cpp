@@ -18,6 +18,7 @@ void processData(std::string encode_or_decode, const std::string compression_tec
     //           << compression_technique << "' and data type '" << data_type << ", :"
     //           << ((encode_or_decode == "de") ? " decoding" : " encoding") << "'." << std::endl;
 
+    // Map for each int-type for the compression encoding
     std::map<std::string, std::function<void()>> for_compression_map = {
             {"int8",  [&]() { for_compression<int8_t>(encode_or_decode, data_type, filename, input_filename); }},
             {"int16", [&]() { for_compression<int16_t>(encode_or_decode, data_type, filename, input_filename); }},
@@ -34,11 +35,12 @@ void processData(std::string encode_or_decode, const std::string compression_tec
     } else if (compression_technique == "dif") {
         dif_compression(encode_or_decode, data_type, filename, input_filename);
     } else if (compression_technique == "for") {
+        // Find the right function for the encoding
         auto it = for_compression_map.find(data_type);
         if (it != for_compression_map.end()) {
             it->second();
         } else {
-            // Handle error case or unknown data type
+            // Handle unknown data type (so, string in this case).
             std::cerr << "Data type " << data_type << " is not supported." << std::endl;
         }
     }
