@@ -106,8 +106,10 @@ int main(int argc, char *argv[]) {
         std::cerr << "Error: File not found." << std::endl;
         return 1;
     }
-    std::string filename = std::filesystem::path(argv[4]).filename().string();
+    std::filesystem::path input_path(argv[4]);
+    std::string directory = input_path.parent_path();
 
+    std::string filename = directory +"/"+ std::filesystem::path(argv[4]).filename().string();
     processData(decode_or_encode, compression_technique, data_type, file, filename);
 
     return SUCCESS;
