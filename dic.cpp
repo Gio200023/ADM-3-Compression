@@ -28,16 +28,15 @@ void dic_compression(const std::string &encode_or_decode, const std::string &dat
         std::string dictionary_filename = output_filename + "file";
 
         std::unordered_map<std::string, int> dictionary;
-        std::vector<int8_t> encodedData; 
+        std::vector<int32_t> encodedData; 
         int index = 0;
 
         for (const auto &value: data) {
             if (dictionary.find(value) == dictionary.end()) {
                 dictionary[value] = index++;
             }
-            encodedData.push_back(static_cast<int8_t>(dictionary[value])); 
+            encodedData.push_back(static_cast<int32_t>(dictionary[value])); 
         }
-
 
         std::ofstream output_file(output_filename, std::ios::binary);
         std::ofstream dictionary_file(dictionary_filename);
@@ -64,7 +63,7 @@ void dic_compression(const std::string &encode_or_decode, const std::string &dat
         std::string dictionary_filename = input_filename + "file";
 
         std::unordered_map<int, std::string> reverseDictionary;
-        std::vector<int8_t> encodedData;
+        std::vector<int32_t> encodedData;
 
         std::ifstream encoded_file(input_filename, std::ios::binary);
         if (!encoded_file.is_open()) {
@@ -72,9 +71,9 @@ void dic_compression(const std::string &encode_or_decode, const std::string &dat
             return;
         }
 
-        int8_t code8;
-        while (encoded_file.read(reinterpret_cast<char*>(&code8), sizeof(code8))) {
-            encodedData.push_back(code8);
+        int32_t code16;
+        while (encoded_file.read(reinterpret_cast<char*>(&code16), sizeof(code16))) {
+            encodedData.push_back(code16);
         }
         encoded_file.close();
 
