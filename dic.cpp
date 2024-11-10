@@ -60,7 +60,7 @@ void dic_compression(const std::string &encode_or_decode, const std::string &dat
         }
 
     } else if (encode_or_decode == "de") {
-        std::string output_filename = input_filename + ".dic";
+        std::string output_filename = input_filename;
         std::string dictionary_filename = input_filename + "file";
 
         std::unordered_map<int, std::string> reverseDictionary;
