@@ -2,10 +2,12 @@
 #include "string"
 #include "fstream"
 #include "filesystem"
+#include <map>
 #include "dic.cpp"
 #include "bin.cpp"
 #include "rle.cpp"
 #include "dif.cpp"
+#include "for.cpp"
 
 #define SUCCESS 0
 
@@ -16,6 +18,14 @@ void processData(std::string encode_or_decode, const std::string compression_tec
     //           << compression_technique << "' and data type '" << data_type << ", :"
     //           << ((encode_or_decode == "de") ? " decoding" : " encoding") << "'." << std::endl;
 
+    // Map for each int-type for the compression encoding
+    std::map<std::string, std::function<void()>> for_compression_map = {
+            {"int8",  [&]() { for_compression<int8_t>(encode_or_decode, data_type, filename, input_filename); }},
+            {"int16", [&]() { for_compression<int16_t>(encode_or_decode, data_type, filename, input_filename); }},
+            {"int32", [&]() { for_compression<int32_t>(encode_or_decode, data_type, filename, input_filename); }},
+            {"int64", [&]() { for_compression<int64_t>(encode_or_decode, data_type, filename, input_filename); }}
+    };
+
     if (compression_technique == "dic") {
         dic_compression(encode_or_decode, data_type, filename, input_filename);
     } else if (compression_technique == "bin") {
@@ -24,6 +34,15 @@ void processData(std::string encode_or_decode, const std::string compression_tec
         rle_compression(encode_or_decode, data_type, filename, input_filename);
     } else if (compression_technique == "dif") {
         dif_compression(encode_or_decode, data_type, filename, input_filename);
+    } else if (compression_technique == "for") {
+        // Find the right function for the encoding
+        auto it = for_compression_map.find(data_type);
+        if (it != for_compression_map.end()) {
+            it->second();
+        } else {
+            // Handle unknown data type (so, string in this case).
+            std::cerr << "Data type " << data_type << " is not supported." << std::endl;
+        }
     }
     // add your function based on datatype and compression tech.
 }

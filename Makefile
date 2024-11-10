@@ -1,5 +1,5 @@
 CXX = c++
-CXXFLAGS = -std=c++17
+CXXFLAGS = -std=c++17 -g
 OBJECTS = \
 	program.o
 
@@ -8,7 +8,8 @@ CPP_FILES = \
 	bin.cpp \
 	dic.cpp \
 	rle.cpp \
-	dif.cpp
+	dif.cpp \
+	for.cpp
 
 all: program
 
