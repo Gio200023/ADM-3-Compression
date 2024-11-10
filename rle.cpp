@@ -43,7 +43,8 @@ void rle_decode(std::ifstream &file, const std::string &input_filename) {
     while (std::getline(file, value)) {
         std::string out = value.substr(0, value.find(" "));
         int64_t count = 1;
-        if (value != out) {
+        int64_t t_count = std::strtoll(out.c_str(), NULL, 10);
+        if (value != out && t_count != 0) {
             count = std::strtoll(out.c_str(), NULL, 10);
             value.erase(0, value.find(" ") + 1);
         }
