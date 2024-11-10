@@ -25,10 +25,7 @@ void dif_encode(std::ifstream &file, const std::string &input_filename) {
     output_file.close();
 }
 
-void dif_decode(std::ifstream &file, const std::string &input_filename) {
-    std::string output_filename = input_filename + ".csv";
-    std::ofstream output_file(output_filename);
-
+void dif_decode(std::ifstream &file) {
     std::string text;
     uint64_t value;
     uint64_t previousValue;
@@ -37,14 +34,13 @@ void dif_decode(std::ifstream &file, const std::string &input_filename) {
         value = std::strtoll(text.c_str(), NULL, 10);
 
         if(isFirst) {
-            output_file << value << std::endl;
+            std::cout << value << std::endl;
         } else {
-            output_file << value + previousValue << std::endl;
+            std::cout << value + previousValue << std::endl;
         }
         previousValue += value;
         isFirst = false;
     }
-    output_file.close();
 }
 
 void dif_compression(const std::string &encode_or_decode, const std::string &data_type, std::ifstream &file,
@@ -53,6 +49,6 @@ void dif_compression(const std::string &encode_or_decode, const std::string &dat
     if (encode_or_decode == "en") {
         dif_encode(file, input_filename);
     } else {
-        dif_decode(file, input_filename);
+        dif_decode(file);
     }
 }

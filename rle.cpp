@@ -35,10 +35,7 @@ void rle_encode(std::ifstream &file, const std::string &input_filename) {
     output_file.close();
 }
 
-void rle_decode(std::ifstream &file, const std::string &input_filename) {
-    std::string output_filename = input_filename + ".csv";
-    std::ofstream output_file(output_filename);
-
+void rle_decode(std::ifstream &file) {
     std::string value;
     while (std::getline(file, value)) {
         std::string out = value.substr(0, value.find(" "));
@@ -50,10 +47,9 @@ void rle_decode(std::ifstream &file, const std::string &input_filename) {
         }
 
         for (int i = 0; i < count; i++) {
-            output_file << value << std::endl;
+            std::cout << value << std::endl;
         }
     }
-    output_file.close();
 }
 
 void rle_compression(const std::string &encode_or_decode, const std::string &data_type, std::ifstream &file,
@@ -62,6 +58,6 @@ void rle_compression(const std::string &encode_or_decode, const std::string &dat
     if (encode_or_decode == "en") {
         rle_encode(file, input_filename);
     } else {
-        rle_decode(file, input_filename);
+        rle_decode(file);
     }
 }
