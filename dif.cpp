@@ -8,8 +8,8 @@ void dif_encode(std::ifstream &file, const std::string &input_filename) {
     std::ofstream output_file(output_filename);
 
     std::string text;
-    uint64_t value;
-    uint64_t previousValue;
+    int64_t value;
+    int64_t previousValue;
     bool isFirst = true;
     while (std::getline(file, text)) {
         value = std::strtoll(text.c_str(), NULL, 10);
@@ -27,8 +27,8 @@ void dif_encode(std::ifstream &file, const std::string &input_filename) {
 
 void dif_decode(std::ifstream &file) {
     std::string text;
-    uint64_t value;
-    uint64_t previousValue;
+    int64_t value;
+    int64_t previousValue = 0;
     bool isFirst = true;
     while (std::getline(file, text)) {
         value = std::strtoll(text.c_str(), NULL, 10);
