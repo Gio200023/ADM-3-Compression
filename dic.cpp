@@ -4,6 +4,8 @@
 #include "unordered_map"
 #include "vector"
 #include "cstdint"
+#include "bitset"
+#include "cmath"
 
 #ifndef READ_DATA
 #define READ_DATA
@@ -28,22 +30,45 @@ void dic_compression(const std::string &encode_or_decode, const std::string &dat
         std::string dictionary_filename = output_filename + "file";
 
         std::unordered_map<std::string, int> dictionary;
-        std::vector<int32_t> encodedData; 
+        std::vector<uint8_t> packedData;  
         int index = 0;
 
+        std::vector<int> encodedData;
         for (const auto &value: data) {
             if (dictionary.find(value) == dictionary.end()) {
                 dictionary[value] = index++;
             }
-            encodedData.push_back(static_cast<int32_t>(dictionary[value])); 
+            encodedData.push_back(dictionary[value]);
+        }
+
+        int bit_width = std::ceil(std::log2(index));
+        if (bit_width < 1) bit_width = 1;  
+
+        uint8_t buffer = 0;   
+        int bits_in_buffer = 0;
+
+        for (const auto &code: encodedData) {
+            for (int i = 0; i < bit_width; ++i) {
+                buffer |= ((code >> i) & 1) << bits_in_buffer;
+                bits_in_buffer++;
+
+                if (bits_in_buffer == 8) {
+                    packedData.push_back(buffer);
+                    buffer = 0;
+                    bits_in_buffer = 0;
+                }
+            }
+        }
+
+        if (bits_in_buffer > 0) {
+            packedData.push_back(buffer);
         }
 
         std::ofstream output_file(output_filename, std::ios::binary);
         std::ofstream dictionary_file(dictionary_filename);
+
         if (output_file.is_open() && dictionary_file.is_open()) {
-            for (const auto &code: encodedData) {
-                output_file.write(reinterpret_cast<const char*>(&code), sizeof(code));
-            }
+            output_file.write(reinterpret_cast<const char*>(packedData.data()), packedData.size());
             output_file.close();
 
             for (const auto &entry: dictionary) {
@@ -54,8 +79,7 @@ void dic_compression(const std::string &encode_or_decode, const std::string &dat
             std::cout << "Data has been encoded and saved to " << output_filename << std::endl;
             std::cout << "Dictionary has been saved to " << dictionary_filename << std::endl;
         } else {
-            std::cerr << "Error: Could not write to file " << output_filename << " or " << dictionary_filename
-                      << std::endl;
+            std::cerr << "Error: Could not write to file " << output_filename << " or " << dictionary_filename << std::endl;
         }
 
     } else if (encode_or_decode == "de") {
@@ -63,7 +87,6 @@ void dic_compression(const std::string &encode_or_decode, const std::string &dat
         std::string dictionary_filename = input_filename + "file";
 
         std::unordered_map<int, std::string> reverseDictionary;
-        std::vector<int32_t> encodedData;
 
         std::ifstream encoded_file(input_filename, std::ios::binary);
         if (!encoded_file.is_open()) {
@@ -71,10 +94,8 @@ void dic_compression(const std::string &encode_or_decode, const std::string &dat
             return;
         }
 
-        int32_t code16;
-        while (encoded_file.read(reinterpret_cast<char*>(&code16), sizeof(code16))) {
-            encodedData.push_back(code16);
-        }
+        std::vector<uint8_t> packedData((std::istreambuf_iterator<char>(encoded_file)),
+                                        std::istreambuf_iterator<char>());
         encoded_file.close();
 
         std::ifstream dict_file(dictionary_filename);
@@ -93,6 +114,27 @@ void dic_compression(const std::string &encode_or_decode, const std::string &dat
             }
         }
         dict_file.close();
+
+        int bit_width = std::ceil(std::log2(reverseDictionary.size()));
+        if (bit_width < 1) bit_width = 1;
+
+        std::vector<int> encodedData;
+        int current_value = 0;
+        int bits_in_value = 0;
+
+        for (const auto &byte : packedData) {
+            for (int i = 0; i < 8; ++i) {
+                int bit = (byte >> i) & 1;
+                current_value |= (bit << bits_in_value);
+                bits_in_value++;
+
+                if (bits_in_value == bit_width) {
+                    encodedData.push_back(current_value);
+                    current_value = 0;
+                    bits_in_value = 0;
+                }
+            }
+        }
 
         std::vector<std::string> decodedData;
         for (const auto &code: encodedData) {
