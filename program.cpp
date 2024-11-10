@@ -2,6 +2,7 @@
 #include "string"
 #include "fstream"
 #include "filesystem"
+#include "functional"
 #include <map>
 #include "dic.cpp"
 #include "bin.cpp"
@@ -26,10 +27,24 @@ void processData(std::string encode_or_decode, const std::string compression_tec
             {"int64", [&]() { for_compression<int64_t>(encode_or_decode, data_type, filename, input_filename); }}
     };
 
+    // Map for int-type for the `bin` compression encoding
+    std::map<std::string, std::function<void()>> bin_compression_map = {
+        {"int8",  [&]() { bin_compression<int8_t>(encode_or_decode, filename, input_filename); }},
+        {"int16", [&]() { bin_compression<int16_t>(encode_or_decode, filename, input_filename); }},
+        {"int32", [&]() { bin_compression<int32_t>(encode_or_decode, filename, input_filename); }},
+        {"int64", [&]() { bin_compression<int64_t>(encode_or_decode, filename, input_filename); }}
+    };
+
     if (compression_technique == "dic") {
         dic_compression(encode_or_decode, data_type, filename, input_filename);
     } else if (compression_technique == "bin") {
-        bin_compression(encode_or_decode, data_type, filename, input_filename);
+        // Call the appropriate bin_compression function
+        auto it = bin_compression_map.find(data_type);
+        if (it != bin_compression_map.end()) {
+            it->second();
+        } else {
+            std::cerr << "Data type " << data_type << " is not supported for binary compression." << std::endl;
+        };
     } else if (compression_technique == "rle") {
         rle_compression(encode_or_decode, data_type, filename, input_filename);
     } else if (compression_technique == "dif") {
@@ -44,7 +59,6 @@ void processData(std::string encode_or_decode, const std::string compression_tec
             std::cerr << "Data type " << data_type << " is not supported." << std::endl;
         }
     }
-    // add your function based on datatype and compression tech.
 }
 
 int main(int argc, char *argv[]) {
