@@ -164,11 +164,9 @@ void for_decode(std::ifstream &file, const std::string &filename) {
     }
 
     // Convert the value to the string and write to disk
-    std::ofstream output(filename);
     for (const auto &value: decodedValues) {
-        output << std::to_string(value) << std::endl;
+        std::cout << std::to_string(value) << std::endl;
     }
-    output.close();
 
 }
 

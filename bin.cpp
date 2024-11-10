@@ -29,12 +29,6 @@ void bin_compression(const std::string &encode_or_decode, std::ifstream &file,
     } else if (encode_or_decode == "de") {
         // Decoding: Read binary data and output as text.
         std::string output_filename = input_filename + ".csv";
-        std::ofstream output_file(output_filename);
-
-        if (!output_file.is_open()) {
-            std::cerr << "Error: Could not write to file " << output_filename << std::endl;
-            return;
-        }
 
         std::ifstream binary_file(input_filename, std::ios::binary);
         if (!binary_file.is_open()) {
@@ -44,13 +38,10 @@ void bin_compression(const std::string &encode_or_decode, std::ifstream &file,
 
         T input_value;
         while (binary_file.read(reinterpret_cast<char *>(&input_value), sizeof(T))) {
-            output_file << static_cast<int64_t>(input_value) << "\n";  // Casting to handle all integer types
+            std::cout << static_cast<int64_t>(input_value) << "\n";  // Casting to handle all integer types
         }
 
-        output_file.close();
         binary_file.close();
-        std::cout << "Data has been decoded and saved to " << output_filename << std::endl;
-
     } else {
         std::cerr << "Invalid encode/decode option." << std::endl;
     }
